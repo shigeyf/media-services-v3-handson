@@ -1,0 +1,17 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "AzureWebJobsDashboard": "",
+    "Region": "",
+    "ResourceGroup": "",
+    "AccountName": "",
+    "SubscriptionId": "",
+    "AadEndpoint": "https://login.microsoftonline.com",
+    "AadTenantId": "",
+    "AadClientId": "",
+    "AadClientSecret": "",
+    "ArmEndpoint": "https://management.azure.com/",
+    "ArmAadAudience": "https://management.core.windows.net/"
+  }
+}
