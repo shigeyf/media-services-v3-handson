@@ -5,15 +5,17 @@
 //
 //  Input:
 //      {
-//          "assetName":  "Name of the asset",
-//          "assetStorage":  "Name of attached storage where to create the asset"  // (optional)  
+//          "assetNamePrefix":  "Name of the asset",
+//          "assetStorageAccount":  "Name of attached storage where to create the asset"  // (optional)  
 //      }
 //  Output:
 //      {
+//          "assetName":  "Name of the asset",
 //          "assetId":  "Id of the asset created"
 //      }
 //
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -39,21 +41,24 @@ namespace amsv3functions
             string jsonContent = await req.Content.ReadAsStringAsync();
             dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
-            if (data.assetName == null)
-            {
-                return req.CreateResponse(HttpStatusCode.BadRequest, new
-                {
-                    error = "Please pass assetName in the input object"
-                });
-            }
-            string assetName = data.assetName;
+
+            if (data.assetNamePrefix == null)
+                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass assetNamePrefix in the input object" });
+            string assetStorageAccount = null;
+            if (data.assetStorageAccount != null)
+                assetStorageAccount = data.assetStorageAccount;
+            Guid assetGuid = Guid.NewGuid();
+            string assetName = data.assetNamePrefix + "-" + assetGuid.ToString();
+
             MediaServicesConfigWrapper amsconfig = new MediaServicesConfigWrapper();
             Asset asset = null;
 
             try
             {
                 IAzureMediaServicesClient client = CreateMediaServicesClient(amsconfig);
-                asset = client.Assets.CreateOrUpdate(amsconfig.ResourceGroup, amsconfig.AccountName, assetName, new Asset());
+                Asset assetParams = new Asset(null, assetName, null, assetGuid, DateTime.Now, DateTime.Now, null, assetName, null, assetStorageAccount, AssetStorageEncryptionFormat.None);
+                asset = client.Assets.CreateOrUpdate(amsconfig.ResourceGroup, amsconfig.AccountName, assetName, assetParams);
+                //asset = client.Assets.CreateOrUpdate(amsconfig.ResourceGroup, amsconfig.AccountName, assetName, new Asset());
             }
             catch (ApiErrorException e)
             {
@@ -67,6 +72,7 @@ namespace amsv3functions
 
             return req.CreateResponse(HttpStatusCode.OK, new
             {
+                assetName = assetName,
                 assetId = asset.AssetId
             });
         }
