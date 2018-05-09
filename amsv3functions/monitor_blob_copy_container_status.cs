@@ -1,6 +1,3 @@
-using System.Net;
-using Newtonsoft.Json;
-using System.Net.Http;
 //
 // Azure Media Services REST API v3 - Functions
 //
@@ -33,6 +30,8 @@ using System.Net.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using Microsoft.Azure.WebJobs;
@@ -64,7 +63,7 @@ namespace amsv3functions
 
             // Validate input objects
             if (data.destinationContainer == null)
-                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceContainer in the input object" });
+                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass destinationContainer in the input object" });
             string destinationContainerName = data.destinationContainer;
             List<string> fileNames = null;
             if (data.fileNames != null)
