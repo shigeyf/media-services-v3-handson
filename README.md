@@ -1,7 +1,7 @@
 ---
 services: media-services,functions
 platforms: dotnet
-author: johndeu
+author: shigeyf
 ---
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2Fmedia-services-v3-handson%2Fmaster%2Fazuredeploy.json" target="_blank">
