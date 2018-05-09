@@ -1,7 +1,7 @@
 //
 // Azure Media Services REST API v3 - Functions
 //
-// create_empty_asset - This function creates an empty asset.
+// start_blob_copy_to_asset - This function starts blob copy to the asset.
 //
 //  Input:
 //      {
@@ -36,6 +36,7 @@ using Microsoft.WindowsAzure.Storage.Auth;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 
 namespace amsv3functions
 {
