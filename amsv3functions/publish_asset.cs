@@ -71,7 +71,7 @@ namespace amsv3functions
 
             return req.CreateResponse(HttpStatusCode.OK, new
             {
-                output = ""
+                locatorName = locatorName
             });
         }
 
