@@ -6,16 +6,20 @@
 //  Input:
 //      {
 //          "inputAssetName":  "Name of the asset for input",
-//          "outputAssetName":  "Name of the asset for output",
-//          "transformName":  "Name of the Transform"
+//          "transformName":  "Name of the Transform",
+//          "outputAssetNamePrefix":  "Name of the asset for output"
+//          "assetStorageAccount":  "Name of attached storage where to create the asset"  // (optional)  
 //      }
 //  Output:
 //      {
 //          "jobName":  "Name of media Job"
+//          "encoderOutputAssetName": "string",
+//          "videoAnalyzerOutputAssetName": "string"
 //      }
 //
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -43,20 +47,24 @@ namespace amsv3functions
             // Validate input objects
             if (data.inputAssetName == null)
                 return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass inputAssetName in the input object" });
-            if (data.outputAssetName == null)
-                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass outputAssetName in the input object" });
             if (data.transformName == null)
                 return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass transformName in the input object" });
+            if (data.outputAssetNamePrefix == null)
+                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass outputAssetNamePrefix in the input object" });
             string inputAssetName = data.inputAssetName;
-            string outputAssetName = data.outputAssetName;
             string transformName = data.transformName;
+            string outputAssetNamePrefix = data.outputAssetNamePrefix;
+            string assetStorageAccount = null;
+            if (data.assetStorageAccount != null)
+                assetStorageAccount = data.assetStorageAccount;
 
             MediaServicesConfigWrapper amsconfig = new MediaServicesConfigWrapper();
             Asset inputAsset = null;
-            Asset outputAsset = null;
 
             string guid = Guid.NewGuid().ToString();
             string jobName = "amsv3function-job-" + guid;
+            string encoderOutputAssetName = null;
+            string videoAnalyzerOutputAssetName = null;
 
             try
             {
@@ -65,13 +73,28 @@ namespace amsv3functions
                 inputAsset = client.Assets.Get(amsconfig.ResourceGroup, amsconfig.AccountName, inputAssetName);
                 if (inputAsset == null)
                     return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Asset for input not found" });
-                outputAsset = client.Assets.Get(amsconfig.ResourceGroup, amsconfig.AccountName, outputAssetName);
-                if (outputAsset == null)
-                    return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Asset for output not found" });
+                Transform transform = client.Transforms.Get(amsconfig.ResourceGroup, amsconfig.AccountName, transformName);
+                if (transform == null)
+                    return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Transform not found" });
+
+                var jobOutputList = new List<JobOutput>();
+                for (int i = 0; i < transform.Outputs.Count; i++)
+                {
+                    Guid assetGuid = Guid.NewGuid();
+                    string outputAssetName = outputAssetNamePrefix + "-" + assetGuid.ToString();
+                    Preset p = transform.Outputs[i].Preset;
+                    if (p is BuiltInStandardEncoderPreset || p is StandardEncoderPreset)
+                        encoderOutputAssetName = outputAssetName;
+                    else if (p is VideoAnalyzerPreset)
+                        videoAnalyzerOutputAssetName = outputAssetName;
+                    Asset assetParams = new Asset(null, outputAssetName, null, assetGuid, DateTime.Now, DateTime.Now, null, outputAssetName, null, assetStorageAccount, AssetStorageEncryptionFormat.None);
+                    Asset outputAsset = client.Assets.CreateOrUpdate(amsconfig.ResourceGroup, amsconfig.AccountName, outputAssetName, assetParams);
+                    jobOutputList.Add(new JobOutputAsset(outputAssetName));
+                }
 
                 // Use the name of the created input asset to create the job input.
                 JobInput jobInput = new JobInputAsset(assetName: inputAssetName);
-                JobOutput[] jobOutputs = { new JobOutputAsset(outputAssetName) };
+                JobOutput[] jobOutputs = jobOutputList.ToArray();
                 Job job = client.Jobs.Create(
                     amsconfig.ResourceGroup,
                     amsconfig.AccountName,
@@ -96,7 +119,9 @@ namespace amsv3functions
 
             return req.CreateResponse(HttpStatusCode.OK, new
             {
-                jobName = jobName
+                jobName = jobName,
+                encoderOutputAssetName = encoderOutputAssetName,
+                videoAnalyzerOutputAssetName = videoAnalyzerOutputAssetName
             });
         }
 
