@@ -6,10 +6,22 @@
 //  Input:
 //      {
 //          "transformName":  "Name of the Transform",
-//          "presetName": "Name of the Encoder Preset"
+//          "builtInStandardEncoderPreset":
+//          {
+//              "presetName": "string"  // string (default: AdaptiveStreaming)
+//          }
+//          "videoAnalyzerPreset":
+//          {
+//              "audioInsightsOnly": true|false,    // boolean: Whether to only extract audio insights when processing a video file
+//              "audioLanguage": "en-US"           // string: The language for the audio payload in the input using the BCP-47 format of 'language tag-region' (e.g: 'en-US').
+//
+//              // The list of supported languages are:
+//              // 'en-US', 'en-GB', 'es-ES', 'es-MX', 'fr-FR', 'it-IT', 'ja-JP', 'pt-BR', 'zh-CN'.
+//          }
 //      }
 //  Output:
 //      {
+//          "transformId":  "Id of the Transform"
 //      }
 //
 
@@ -51,15 +63,9 @@ namespace amsv3functions
             // Validate input objects
             if (data.transformName == null)
                 return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass transformName in the input object" });
-            if (data.presetName == null)
-                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass presetName in the input object" });
+            if (data.builtInStandardEncoderPreset == null && data.videoAnalyzerPreset == null)
+                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass preset in the input object" });
             string transformName = data.transformName;
-            string presetName = data.presetName;
-
-            if (!encoderPreset.ContainsKey(presetName))
-            {
-                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "presetName not found" });
-            }
 
             MediaServicesConfigWrapper amsconfig = new MediaServicesConfigWrapper();
             string transformId = null;
@@ -74,19 +80,55 @@ namespace amsv3functions
                 if (transform == null)
                 {
                     // You need to specify what you want it to produce as an output
-                    TransformOutput[] output = new TransformOutput[]
+                    var transformOutputList = new List<TransformOutput>();
+
+                    // BuiltInStandardEncoderPreset
+                    if (data.builtInStandardEncoderPreset != null)
                     {
-                    new TransformOutput
-                    {
-                        // The preset for the Transform is set to one of Media Services built-in sample presets.
-                        // You can  customize the encoding settings by changing this to use "StandardEncoderPreset" class.
-                        Preset = new BuiltInStandardEncoderPreset()
+                        EncoderNamedPreset preset = EncoderNamedPreset.AdaptiveStreaming;
+
+                        if (data.builtInStandardEncoderPreset.presetName != null)
                         {
-                            // This sample uses the built-in encoding preset for Adaptive Bitrate Streaming.
-                            PresetName = encoderPreset[presetName]
+                            string presetName = data.builtInStandardEncoderPreset.presetName;
+                            if (encoderPreset.ContainsKey(presetName))
+                                preset = encoderPreset[presetName];
                         }
+
+                        TransformOutput encoderTransform = new TransformOutput
+                        {
+                            // The preset for the Transform is set to one of Media Services built-in sample presets.
+                            // You can  customize the encoding settings by changing this to use "StandardEncoderPreset" class.
+                            Preset = new BuiltInStandardEncoderPreset()
+                            {
+                                // This sample uses the built-in encoding preset for Adaptive Bitrate Streaming.
+                                PresetName = preset
+                            }
+                        };
+                        transformOutputList.Add(encoderTransform);
                     }
-                    };
+
+                    // VideoAnalyzerPreset
+                    if (data.builtInStandardEncoderPreset != null)
+                    {
+                        bool audioInsightsOnly = false;
+                        string audioLanguage = "en-US";
+
+                        if (data.videoAnalyzerPreset.audioInsightsOnly != null)
+                            audioInsightsOnly = data.videoAnalyzerPreset.audioInsightsOnly;
+                        if (data.videoAnalyzerPreset.audioLanguage != null)
+                            audioLanguage = data.videoAnalyzerPreset.audioLanguage;
+
+                        TransformOutput encoderTransform = new TransformOutput
+                        {
+                            // The preset for the Transform is set to one of Media Services built-in sample presets.
+                            // You can  customize the encoding settings by changing this to use "StandardEncoderPreset" class.
+                            Preset = new VideoAnalyzerPreset(audioLanguage, audioInsightsOnly)
+                        };
+                        transformOutputList.Add(encoderTransform);
+                    }
+
+                    // You need to specify what you want it to produce as an output
+                    TransformOutput[] output = transformOutputList.ToArray();
 
                     // Create the Transform with the output defined above
                     transform = client.Transforms.CreateOrUpdate(amsconfig.ResourceGroup, amsconfig.AccountName, transformName, output);
