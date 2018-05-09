@@ -11,7 +11,7 @@
 //      }
 //  Output:
 //      {
-//          "copyStatus": true, // Return Blob Copy Status: true or false
+//          "copyStatus": true|false, // Return Blob Copy Status: true or false
 //          "blobCopyStatus": [
 //              {
 //                  "blobName": "Name of blob",
