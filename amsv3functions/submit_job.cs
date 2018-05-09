@@ -35,7 +35,7 @@ namespace amsv3functions
         [FunctionName("submit_job")]
         public static async Task<object> Run([HttpTrigger(WebHookType = "genericJson")]HttpRequestMessage req, TraceWriter log)
         {
-            log.Info($"AMS v3 Function - create_transform was triggered!");
+            log.Info($"AMS v3 Function - submit_job was triggered!");
 
             string jsonContent = await req.Content.ReadAsStringAsync();
             dynamic data = JsonConvert.DeserializeObject(jsonContent);
@@ -57,7 +57,6 @@ namespace amsv3functions
 
             string guid = Guid.NewGuid().ToString();
             string jobName = "amsv3function-job-" + guid;
-
 
             try
             {
