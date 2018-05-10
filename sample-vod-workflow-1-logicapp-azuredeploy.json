@@ -1,0 +1,284 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logicAppName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "Name of the Logic App."
+            }
+        },
+        "functionsDeploymentResourceGroup": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "Name of deployment resource used by the functions."
+            }
+        },
+        "functionsAppName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "Name of deployment of the functions."
+            }
+        },
+        "mediaSourceStorageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the storage account used by the media services account."
+            }
+        },
+        "mediaServicesTransformName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of Transform name used by the media services account."
+            }
+        }
+    },
+    "variables": {
+        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', parameters('mediaSourceStorageAccountName'))]",
+        "logicAppLocation": "[resourceGroup().location]",
+        "azureblob_1_Connection_Name": "azureblob-1",
+        "azureblob_1_Connection_DisplayName": "[parameters('mediaSourceStorageAccountName')]"
+    },
+    "resources": [
+        {
+            "name": "[parameters('logicAppName')]",
+            "type": "Microsoft.Logic/workflows",
+            "location": "[variables('logicAppLocation')]",
+            "tags": {
+                "displayName": "LogicApp"
+            },
+            "apiVersion": "2016-06-01",
+            "properties": {
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "actions": {
+                        "create_empty_asset": {
+                            "inputs": {
+                                "body": {
+                                    "assetNamePrefix": "ServerlessDemoAsset"
+                                },
+                                "function": {
+                                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/create_empty_asset')]"
+                                }
+                            },
+                            "runAfter": {},
+                            "type": "Function"
+                        },
+                        "start_blob_copy_to_asset": {
+                            "inputs": {
+                                "body": {
+                                    "assetId": "@body('create_empty_asset')['assetId']",
+                                    "assetName": "@body('create_empty_asset')['assetName']",
+                                    "fileNames": [
+                                        "@triggerBody()?['Name']"
+                                    ],
+                                    "sourceStorageAccountName": "[parameters('mediaSourceStorageAccountName')]",
+                                    "sourceStorageAccountKey": "[listKeys(variables('storageAccountid'),'2015-05-01-preview').key1]",
+                                    "sourceContainer": "@substring(triggerBody()?['Path'], 1, sub(lastIndexOf(triggerBody()?['Path'], '/'), 1))"
+                                },
+                                "function": {
+                                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/start_blob_copy_to_asset')]"
+                                }
+                            },
+                            "runAfter": {
+                                "create_empty_asset": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Function"
+                        },
+                        "Until_Blob_Copy_Finished": {
+                            "actions": {
+                                "Delay_for_blob_copy_container_status": {
+                                    "inputs": {
+                                        "interval": {
+                                            "count": 30,
+                                            "unit": "Second"
+                                        }
+                                    },
+                                    "runAfter": {},
+                                    "type": "Wait"
+                                },
+                                "monitor_blob_copy_container_status": {
+                                    "inputs": {
+                                        "body": {
+                                            "destinationContainer": "@body('start_blob_copy_to_asset')['destinationContainer']"
+                                        },
+                                        "function": {
+                                            "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/monitor_blob_copy_container_status')]"
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "Delay_for_blob_copy_container_status": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Function"
+                                }
+                            },
+                            "expression": "@equals(body('monitor_blob_copy_container_status')['CopyStatus'], true)",
+                            "limit": {
+                                "count": 1000,
+                                "timeout": "PT2H"
+                            },
+                            "runAfter": {
+                                "start_blob_copy_to_asset": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Until"
+                        },
+                        "submit_job": {
+                            "inputs": {
+                                "body": {
+                                    "inputAssetName": "@body('create_empty_asset')['assetName']",
+                                    "outputAssetNamePrefix": "SeverlessDemoOutputAsset",
+                                    "transformName": "[parameters('mediaServicesTransformName')]"
+                                },
+                                "function": {
+                                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/submit_job')]"
+                                }
+                            },
+                            "runAfter": {
+                                "Until_Blob_Copy_Finished": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Function"
+                        },
+                        "Until_Job_Finished": {
+                            "actions": {
+                                "Delay_for_monitor_job_status": {
+                                    "inputs": {
+                                        "interval": {
+                                            "count": 2,
+                                            "unit": "Minute"
+                                        }
+                                    },
+                                    "runAfter": {},
+                                    "type": "Wait"
+                                },
+                                "monitor_job_status": {
+                                    "inputs": {
+                                        "body": {
+                                            "jobName": "@body('submit_job')['jobName']",
+                                            "transformName": "[parameters('mediaServicesTransformName')]"
+                                        },
+                                        "function": {
+                                            "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/monitor_job_status')]"
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "Delay_for_monitor_job_status": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Function"
+                                }
+                            },
+                            "expression": "@equals(body('monitor_job_status')['jobStatus'], 'Finished')",
+                            "limit": {
+                                "count": 1000,
+                                "timeout": "PT2H"
+                            },
+                            "runAfter": {
+                                "submit_job": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Until"
+                        },
+                        "publish_asset": {
+                            "inputs": {
+                                "body": {
+                                    "publishAssetName": "@body('submit_job')['encoderOutputAssetName']",
+                                    "streamingPolicy": "DownloadAndClearStreaming"
+                                },
+                                "function": {
+                                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/publish_asset')]"
+                                }
+                            },
+                            "runAfter": {
+                                "Until_Job_Finished": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Function"
+                        }
+                    },
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "When_a_blob_is_added_or_modified_(properties_only)": {
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                    }
+                                },
+                                "method": "get",
+                                "path": "/datasets/default/triggers/batch/onupdatedfile",
+                                "queries": {
+                                    "folderId": "JTJmaW1wb3J0cw==",
+                                    "maxFileCount": 10
+                                }
+                            },
+                            "metadata": {
+                                "JTJmaW1wb3J0cw==": "/imports"
+                            },
+                            "recurrence": {
+                                "frequency": "Minute",
+                                "interval": 1
+                            },
+                            "splitOn": "@triggerBody()",
+                            "type": "ApiConnection"
+                        }
+                    },        
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "azureblob": {
+                                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/', 'azureblob')]",
+                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('azureblob_1_Connection_Name'))]",
+                                "connectionName": "[variables('azureblob_1_Connection_Name')]"
+                            }
+                        }
+                    }
+                }                    
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', variables('azureblob_1_Connection_Name'))]"
+            ]
+        },
+        {
+            "type": "MICROSOFT.WEB/CONNECTIONS",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('azureblob_1_Connection_Name')]",
+            "location": "[variables('logicAppLocation')]",
+            "properties": {
+              "api": {
+                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/', 'azureblob')]"
+              },
+              "displayName": "[variables('azureblob_1_Connection_DisplayName')]",
+              "parameterValues": {
+                "accountName": "[parameters('mediaSourceStorageAccountName')]",
+                "accessKey": "[listKeys(variables('storageAccountid'),'2015-05-01-preview').key1]"
+              }
+            }
+        }              
+    ],
+    "outputs": {}
+}
