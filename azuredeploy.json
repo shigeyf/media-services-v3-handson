@@ -100,7 +100,7 @@
     "functionsAppName": "[concat(toLower(parameters('functionsAppName')),'-',uniqueString(resourceGroup().id))]",
     "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "storageAccountName": "[concat('azfnstorage',uniqueString(resourceGroup().id))]",
-    "hostingPlanName": "[concat(variables('functionsAppName'), 'plan')]"
+    "hostingPlanName": "[concat(variables('functionsAppName'), '-plan')]"
   },
   "resources": [
     {
