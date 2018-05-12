@@ -298,7 +298,7 @@
                             },
                             "runAfter": {
                                 "Scope_-_Process_video_file": [
-                                    "Succeeded"
+                                    "Failed"
                                 ]
                             },
                             "type": "ApiConnection"
