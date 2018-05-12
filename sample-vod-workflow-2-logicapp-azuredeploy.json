@@ -372,7 +372,7 @@
                             },
                             "outlook": {
                                 "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/', 'outlook')]",                
-                                "connectionId": "[resourceId('/Microsoft.Web/connections/', variables('outlook_1_Connection_Name'))]",
+                                "connectionId": "[resourceId('Microsoft.Web/connections/', variables('outlook_1_Connection_Name'))]",
                                 "connectionName": "[variables('outlook_1_Connection_Name')]"
                             }
                         }
