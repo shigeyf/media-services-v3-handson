@@ -37,7 +37,7 @@
             "metadata": {
                 "description": "Outlook Email account name."
             }
-        },        
+        },
         "notificationEmailAddress": {
             "type": "string",
             "metadata": {
@@ -151,7 +151,7 @@
                                     "type": "Until"
                                 }
                             },
-                            "runAfter" : {},
+                            "runAfter": {},
                             "type": "scope"
                         },
                         "Scope_-_Process_video_file": {
@@ -167,11 +167,7 @@
                                             "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/submit_job')]"
                                         }
                                     },
-                                    "runAfter": {
-                                        "Scope_-_Get_video_file": [
-                                            "Succeeded"
-                                        ]
-                                    },
+                                    "runAfter": {},
                                     "type": "Function"
                                 },
                                 "Until_Job_Finished": {
@@ -236,11 +232,7 @@
                                             "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/publish_asset')]"
                                         }
                                     },
-                                    "runAfter": {
-                                        "Scope_-_Process_video_file": [
-                                            "Succeeded"
-                                        ]
-                                    },
+                                    "runAfter": {},
                                     "type": "Function"
                                 },
                                 "Send_an_email_-_Success_-_Video_URLs": {
@@ -251,9 +243,6 @@
                                             "To": "[parameters('notificationEmailAddress')]"
                                         },
                                         "host": {
-                                            "api": {
-                                                "runtimeUrl": "[concat('https://logic-apis-', variables('logicAppLocation'), '.azure-apim.net/apim/outlook')]"
-                                            },
                                             "connection": {
                                                 "name": "@parameters('$connections')['outlook']['connectionId']"
                                             }
@@ -267,14 +256,14 @@
                                         ]
                                     },
                                     "type": "ApiConnection"
-                                }                                            
+                                }
                             },
                             "runAfter": {
                                 "Scope_-_Process_video_file": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "Scope"                                        
+                            "type": "Scope"
                         },
                         "Send_an_email_-_Error_-_Get_video_file": {
                             "inputs": {
@@ -284,9 +273,6 @@
                                     "To": "[parameters('notificationEmailAddress')]"
                                 },
                                 "host": {
-                                    "api": {
-                                        "runtimeUrl": "[concat('https://logic-apis-', variables('logicAppLocation'), '.azure-apim.net/apim/outlook')]"
-                                    },
                                     "connection": {
                                         "name": "@parameters('$connections')['outlook']['connectionId']"
                                     }
@@ -309,9 +295,6 @@
                                     "To": "[parameters('notificationEmailAddress')]"
                                 },
                                 "host": {
-                                    "api": {
-                                        "runtimeUrl": "[concat('https://logic-apis-', variables('logicAppLocation'), '.azure-apim.net/apim/outlook')]"
-                                    },
                                     "connection": {
                                         "name": "@parameters('$connections')['outlook']['connectionId']"
                                     }
@@ -358,7 +341,7 @@
                             "splitOn": "@triggerBody()",
                             "type": "ApiConnection"
                         }
-                    },        
+                    },
                     "contentVersion": "1.0.0.0",
                     "outputs": {}
                 },
@@ -371,13 +354,13 @@
                                 "connectionName": "[variables('azureblob_1_Connection_Name')]"
                             },
                             "outlook": {
-                                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/', 'outlook')]",                
+                                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/', 'outlook')]",
                                 "connectionId": "[resourceId('Microsoft.Web/connections/', variables('outlook_1_Connection_Name'))]",
                                 "connectionName": "[variables('outlook_1_Connection_Name')]"
                             }
                         }
                     }
-                }                    
+                }
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Web/connections', variables('azureblob_1_Connection_Name'))]",
@@ -411,7 +394,7 @@
                 },
                 "displayName": "[variables('outlook_1_Connection_DisplayName')]"
             }
-        }        
+        }
     ],
     "outputs": {}
 }
