@@ -394,14 +394,13 @@
         {
             "type": "MICROSOFT.WEB/CONNECTIONS",
             "apiVersion": "2016-06-01",
-            "apiVersion": "2016-06-01",
             "name": "[variables('outlook_1_Connection_Name')]",
             "location": "[variables('logicAppLocation')]",
             "properties": {
-              "api": {
-                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/', 'outlook')]"
-              },
-              "displayName": "[variables('outlook_1_Connection_DisplayName')]"
+                "api": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/', 'outlook')]"
+                },
+                "displayName": "[variables('outlook_1_Connection_DisplayName')]"
             }
         }        
     ],
