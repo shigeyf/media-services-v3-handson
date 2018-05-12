@@ -26,6 +26,8 @@ namespace amsv3functions
                 s.encryptionScheme = path.EncryptionScheme;
                 s.urls = new string[path.Paths.Count];
                 for (int i = 0; i < path.Paths.Count; i++) s.urls[i] = "https://" + streamingUrlPrefx + path.Paths[i];
+                if (path.StreamingProtocol == "SmoothStreaming")
+                    output.streamingUrl = "https://" + streamingUrlPrefx + path.Paths[0];
                 psUrls.Add(s);
             }
             output.streamingUrls = psUrls.ToArray();
@@ -51,6 +53,7 @@ namespace amsv3functions
     public class PublishAssetOutput
     {
         public string locatorName;
+        public string streamingUrl;
         public PublishStreamingUrls[] streamingUrls;
         public string[] downloadUrls;
     }
