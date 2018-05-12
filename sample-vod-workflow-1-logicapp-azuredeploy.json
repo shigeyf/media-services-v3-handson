@@ -42,7 +42,7 @@
     "variables": {
         "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', parameters('mediaSourceStorageAccountName'))]",
         "logicAppLocation": "[resourceGroup().location]",
-        "azureblob_1_Connection_Name": "azureblob-1",
+        "azureblob_1_Connection_Name": "azureblob-logicapp-1",
         "azureblob_1_Connection_DisplayName": "[parameters('mediaSourceStorageAccountName')]"
     },
     "resources": [

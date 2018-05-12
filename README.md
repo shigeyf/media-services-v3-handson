@@ -9,11 +9,6 @@ Azure Function
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-Azure Logic App
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2Fmedia-services-v3-handson%2Fmaster%2Fsample-vod-workflow-1-logicapp-azuredeploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
-
 # Media Services v3 API: Integrating Azure Media Services with Azure Functions and Logic Apps
 This project contains examples of using Azure Functions with Azure Media Services.
 
@@ -43,6 +38,19 @@ The deployment template will automatically create the following Azure resources:
 * The required function's application settings will be updated to point to the new resources automatically. You can modify any of these settings after deployment.
 
 Note : if you never provided your GitHub account in the Azure portal before, the continous integration probably will probably fail and you won't see the functions. In that case, you need to setup it manually. Go to your azure functions deployment / Functions app settings / Configure continous integration. Select GitHub as a source and configure it to use your fork.
+
+## Deploy Logic Apps samples
+
+1. Basic sample workflow with
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2Fmedia-services-v3-handson%2Fmaster%2Fsample-vod-workflow-1-logicapp-azuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+2. Basic sample workflow with error handling
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2Fmedia-services-v3-handson%2Fmaster%2Fsample-vod-workflow-2-logicapp-azuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
 
 
 ### License
