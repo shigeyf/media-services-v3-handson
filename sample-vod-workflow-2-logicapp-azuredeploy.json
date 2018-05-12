@@ -251,6 +251,9 @@
                                             "To": "[parameters('notificationEmailAddress')]"
                                         },
                                         "host": {
+                                            "api": {
+                                                "runtimeUrl": "[concat('https://logic-apis-', variables('logicAppLocation'), '.azure-apim.net/apim/outlook')]"
+                                            },
                                             "connection": {
                                                 "name": "@parameters('$connections')['outlook']['connectionId']"
                                             }
@@ -281,6 +284,9 @@
                                     "To": "[parameters('notificationEmailAddress')]"
                                 },
                                 "host": {
+                                    "api": {
+                                        "runtimeUrl": "[concat('https://logic-apis-', variables('logicAppLocation'), '.azure-apim.net/apim/outlook')]"
+                                    },
                                     "connection": {
                                         "name": "@parameters('$connections')['outlook']['connectionId']"
                                     }
@@ -303,6 +309,9 @@
                                     "To": "[parameters('notificationEmailAddress')]"
                                 },
                                 "host": {
+                                    "api": {
+                                        "runtimeUrl": "[concat('https://logic-apis-', variables('logicAppLocation'), '.azure-apim.net/apim/outlook')]"
+                                    },
                                     "connection": {
                                         "name": "@parameters('$connections')['outlook']['connectionId']"
                                     }
