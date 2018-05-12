@@ -168,7 +168,7 @@
                                         }
                                     },
                                     "runAfter": {
-                                        "Until_Blob_Copy_Finished": [
+                                        "Scope_-_Get_video_file": [
                                             "Succeeded"
                                         ]
                                     },
@@ -237,7 +237,7 @@
                                         }
                                     },
                                     "runAfter": {
-                                        "Until_Job_Finished": [
+                                        "Scope_-_Process_video_file": [
                                             "Succeeded"
                                         ]
                                     },
