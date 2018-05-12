@@ -32,12 +32,6 @@
                 "description": "Name of the storage account used by the media services account."
             }
         },
-        "outlookAccountName": {
-            "type": "string",
-            "metadata": {
-                "description": "Outlook Email account name."
-            }
-        },
         "notificationEmailAddress": {
             "type": "string",
             "metadata": {
