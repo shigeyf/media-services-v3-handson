@@ -249,7 +249,7 @@
                                 "Send_an_email_-_Success_-_Video_URLs": {
                                     "inputs": {
                                         "body": {
-                                            "Body": "@{body('publish_asset_video')}\n@{body('publish_asset_insights')}",
+                                            "Body": "Player URLs: @{concat('https://tokyomediaevent.azurewebsites.net/ampdemo/azuremediaplayer.html?url=',encodeUriComponent(body('publish_asset_video')['streamingUrl']),'&captions=English,en,',encodeUriComponent(body('publish_asset_insights')['captionVttUrl']),'&facejson=',encodeUriComponent(body('publish_asset_insights')['facesJsonUrl']))}\n\nVideo URLs: @{body('publish_asset_video')['streamingUrl']}\n\nCaption URLs: @{body('publish_asset_insights')['captionVttUrl']}\n\n\nJSON Data: \n@{body('publish_asset_video')}\n@{body('publish_asset_insights')}",
                                             "Subject": "Logic App Email - Success",
                                             "To": "[parameters('notificationEmailAddress')]"
                                         },
