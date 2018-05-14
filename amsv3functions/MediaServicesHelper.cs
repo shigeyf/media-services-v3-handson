@@ -17,6 +17,13 @@ namespace amsv3functions
             PublishAssetOutput output = new PublishAssetOutput();
 
             output.locatorName = locatorName;
+            output.streamingUrl = "";
+            output.captionVttUrl = "";
+            output.annotationsJsonUrl = "";
+            output.contentModerationJsonUrl = "";
+            output.facesJsonUrl = "";
+            output.insightsJsonUrl = "";
+            output.ocrJsonUrl = "";
 
             List<PublishStreamingUrls> psUrls = new List<PublishStreamingUrls>();
             foreach (var path in paths.StreamingPaths)
@@ -36,6 +43,11 @@ namespace amsv3functions
             foreach (var path in paths.DownloadPaths)
             {
                 dUrls.Add("https://" + streamingUrlPrefx + path);
+                if (path.EndsWith("annotations.json")) output.annotationsJsonUrl = "https://" + streamingUrlPrefx + path;
+                if (path.EndsWith("contentmoderation.json")) output.contentModerationJsonUrl = "https://" + streamingUrlPrefx + path;
+                if (path.EndsWith("faces.json")) output.facesJsonUrl = "https://" + streamingUrlPrefx + path;
+                if (path.EndsWith("insights.json")) output.insightsJsonUrl = "https://" + streamingUrlPrefx + path;
+                if (path.EndsWith("transcript.vtt")) output.captionVttUrl = "https://" + streamingUrlPrefx + path;
             }
             output.downloadUrls = dUrls.ToArray();
 
@@ -54,6 +66,15 @@ namespace amsv3functions
     {
         public string locatorName;
         public string streamingUrl;
+        // Audio Analyzer - VTT (speech-to-text)
+        public string captionVttUrl;
+        // Video Analyzer JSON
+        public string annotationsJsonUrl;
+        public string contentModerationJsonUrl;
+        public string facesJsonUrl;
+        public string insightsJsonUrl;
+        public string ocrJsonUrl;
+        // URLs
         public PublishStreamingUrls[] streamingUrls;
         public string[] downloadUrls;
     }
