@@ -40,6 +40,7 @@
         },
         "mediaServicesTransformName": {
             "type": "string",
+            "defaultValue": "ServerlessTestTransform",
             "metadata": {
                 "description": "Name of Transform name used by the media services account."
             }
@@ -150,6 +151,20 @@
                         },
                         "Scope_-_Process_video_file": {
                             "actions": {
+                                "create_transform": {
+                                    "inputs": {
+                                        "body": {
+                                            "transformName": "[parameters('mediaServicesTransformName')]",
+                                            "builtInStandardEncoderPreset": {},
+                                            "videoAnalyzerPreset": {}
+                                        },
+                                        "function": {
+                                            "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/create_transform')]"
+                                        }
+                                    },
+                                    "runAfter": {},
+                                    "type": "Function"
+                                },
                                 "submit_job": {
                                     "inputs": {
                                         "body": {
@@ -161,7 +176,11 @@
                                             "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/submit_job')]"
                                         }
                                     },
-                                    "runAfter": {},
+                                    "runAfter": {
+                                        "create_transform": [
+                                            "Succeeded"
+                                        ]
+                                    },
                                     "type": "Function"
                                 },
                                 "Until_Job_Finished": {
