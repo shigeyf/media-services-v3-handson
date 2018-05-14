@@ -41,12 +41,12 @@ Note : if you never provided your GitHub account in the Azure portal before, the
 
 ## Deploy Logic Apps samples
 
-1. Basic sample workflow with
+1. Basic sample workflow
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2Fmedia-services-v3-handson%2Fmaster%2Fsample-vod-workflow-1-logicapp-azuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-2. Basic sample workflow with error handling
+2. Media Analytics workflow with error handling
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2Fmedia-services-v3-handson%2Fmaster%2Fsample-vod-workflow-2-logicapp-azuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
