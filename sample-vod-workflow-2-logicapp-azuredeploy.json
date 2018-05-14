@@ -216,7 +216,7 @@
                         },
                         "Scope_-_Publish_video_file": {
                             "actions": {
-                                "publish_asset": {
+                                "publish_asset_video": {
                                     "inputs": {
                                         "body": {
                                             "publishAssetName": "@body('submit_job')['encoderOutputAssetName']",
@@ -229,10 +229,27 @@
                                     "runAfter": {},
                                     "type": "Function"
                                 },
+                                "publish_asset_insights": {
+                                    "inputs": {
+                                        "body": {
+                                            "publishAssetName": "@body('submit_job')['videoAnalyzerOutputAssetName']",
+                                            "streamingPolicy": "DownloadOnly"
+                                        },
+                                        "function": {
+                                            "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsAppName'), '/functions/publish_asset')]"
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "publish_asset_video": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Function"
+                                },
                                 "Send_an_email_-_Success_-_Video_URLs": {
                                     "inputs": {
                                         "body": {
-                                            "Body": "@{body('publish_asset')}",
+                                            "Body": "@{body('publish_asset_video')}\n@{body('publish_asset_insights')}",
                                             "Subject": "Logic App Email - Success",
                                             "To": "[parameters('notificationEmailAddress')]"
                                         },
@@ -245,7 +262,7 @@
                                         "path": "/Mail"
                                     },
                                     "runAfter": {
-                                        "publish_asset": [
+                                        "publish_asset_insights": [
                                             "Succeeded"
                                         ]
                                     },
